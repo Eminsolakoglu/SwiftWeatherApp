@@ -4,23 +4,52 @@ struct LoginView: View {
     @Binding var name: String
     @Binding var isLoggedIn: Bool
     
-    var body: some View{
-        VStack(spacing: 20) {
-                Text("Login")
-                .font(.largeTitle)
-                .bold(true)
+    var body: some View {
+        ZStack {
+            // 🌈 Arka plan gradient
+            LinearGradient(colors: [.blue, .white], startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
+
+            VStack(spacing: 30) {
+                // 👋 Başlık
+                Text("Giriş Yap")
+                    .font(.largeTitle)
+                    .bold()
+                    .foregroundColor(.white)
+                    .shadow(radius: 3)
                 
-            TextField("Name",text: $name)
+                // 🧑‍💼 Ad girişi
+                TextField("Adınızı girin", text: $name)
+                    .padding()
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+                    .foregroundColor(.black)
+                    .font(.title3)
+                
+                // ✅ Giriş butonu
+                Button(action: {
+                    withAnimation {
+                        print("Giriş yapılıyor: \(name)")
+                        isLoggedIn = true
+                    }
+                }) {
+                    Text("Giriş Yap")
+                        .bold()
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(name.isEmpty ? Color.gray : Color.green)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                }
                 .padding(.horizontal)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-            Button("Login"){
-                print("Giriş yapılıyor: \(name)")
-                isLoggedIn=true
+                .disabled(name.isEmpty)
             }
-            .tint(.green)
-            .disabled(name.isEmpty)
-            .buttonStyle(.borderedProminent)
+            .padding()
         }
-        .padding()
     }
+}
+
+#Preview {
+    LoginView(name: .constant(""), isLoggedIn: .constant(false))
 }
