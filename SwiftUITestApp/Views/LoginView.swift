@@ -6,19 +6,16 @@ struct LoginView: View {
     
     var body: some View {
         ZStack {
-            // 🌈 Arka plan gradient
             LinearGradient(colors: [.blue, .white], startPoint: .top, endPoint: .bottom)
                 .ignoresSafeArea()
 
             VStack(spacing: 30) {
-                // 👋 Başlık
                 Text("Giriş Yap")
                     .font(.largeTitle)
                     .bold()
                     .foregroundColor(.white)
                     .shadow(radius: 3)
                 
-                // 🧑‍💼 Ad girişi
                 TextField("Adınızı girin", text: $name)
                     .padding()
                     .background(.ultraThinMaterial)
@@ -27,7 +24,6 @@ struct LoginView: View {
                     .foregroundColor(.black)
                     .font(.title3)
                 
-                // ✅ Giriş butonu
                 Button(action: {
                     withAnimation {
                         print("Giriş yapılıyor: \(name)")
