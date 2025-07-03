@@ -1,40 +1,60 @@
+// ViewModels/WeatherViewModel.swift
 import Foundation
+import Combine // Eğer kullanmaya devam ediyorsanız
 
-class WeatherViewModel: ObservableObject{ //paylaşılabilyor bir nesne =class ViewModeli View'a aktarmamızı sağlayacak
-    @Published var city:String = ""    //@Published Bu değişken dinlenir yani değişirse SwiftUI otomatik güncellenir y
-    @Published var temperature:String = ""
-    @Published var description:String = ""
+@MainActor
+class WeatherViewModel: ObservableObject {
+    @Published var city: String = ""
+    @Published var temperature: String = ""
+    @Published var description: String = ""
     @Published var mainWeather: String = ""
+    @Published var isLoading: Bool = false
 
-    
-    func fetchWeather(){ //apiden veri çeker
-        let apiKey = "5609fc7f013ef18135c82b89e1ad904c" //api key
-        let query = city.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "" //şehir isimlerindeki düzenlemeleri ayarlıyor türkçe karakter ya da boşluk olabilir onları düzeltiyor
-        let urlString = "https://api.openweathermap.org/data/2.5/weather?q=\(query)&appid=\(apiKey)&units=metric" //apikey ve şehir adı ile tam url oluştu unit=metric ile celcius seviyesine ayarlama
-        
-        guard let url = URL(string: urlString) else {return}  //urlstring metibn biz onu nesneye çeviriyoruz
-        
-        URLSession.shared.dataTask(with: url) { (data, response, error) in //URLSession swiftin internete istek atmasını sağlayan sınıf
-            if let data = data{//veri gelirse işle
-                if let decoded = try? JSONDecoder().decode(WeatherResponse.self, from: data){
-                    DispatchQueue.main.async { //UI'yı güncellemek için ana kuyruğa dönüş
-                        self.temperature="\(decoded.main.temp)°C"
-                        self.description=decoded.weather.first?.description.capitalized ?? "-" //jsondan gelen verileri formatlayarak @Published değişkenine aktarıyor
-                        self.mainWeather = decoded.weather.first?.main ?? "-"
-                    }
-                }
-                else {
-                    print("json çzöümleme başarısız")
-                    
-                }
-            }else if let error = error{
-                    print("api hatası \(error.localizedDescription)")
-                }
-            }
-        .resume()
+    // Alert durumunu yönetecek yeni değişkenler
+    @Published var showAlert: Bool = false
+    @Published var alertMessage: String = "" // Kullanıcıya gösterilecek hata mesajı
 
+    private let weatherAPI: WeatherAPI
+
+    init(weatherAPI: WeatherAPI = WeatherAPI()) {
+        self.weatherAPI = weatherAPI
+    }
+
+
+    func fetchWeather() async {
+        isLoading = true
+        // alertMessage'i her yeni istekte temizleyelim
+        alertMessage = ""
+        showAlert = false
+
+        guard !city.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            self.alertMessage = "Lütfen bir şehir adı giriniz."
+            self.showAlert = true // Alert'i göster
+            isLoading = false
+            return
         }
-    
+
+        do {
+            let response = try await weatherAPI.fetchCurrentWeather(for: city)
+
+            self.temperature = "\(Int(response.main.temp))°C"
+            self.description = response.weather.first?.description.capitalized ?? "-"
+            self.mainWeather = response.weather.first?.main ?? "-"
+
+        } catch {
+            // Hata yakalama ve kullanıcıya gösterme
+                if let networkError = error as? NetworkError  {
+                    self.alertMessage = networkError.localizedDescription // Diğer network hataları
+                }
+             else {
+                self.alertMessage = "Bilinmeyen bir hata oluştu: \(error.localizedDescription)"
+            }
+            self.showAlert = true // Alert'i göster
+            print("Hava durumu çekme hatası: \(error.localizedDescription)") // Terminale debug için yazdır
+        }
+        isLoading = false
+    }
+
     func emojiForWeather(main: String) -> String {
         switch main {
         case "Clear":
@@ -42,19 +62,17 @@ class WeatherViewModel: ObservableObject{ //paylaşılabilyor bir nesne =class V
         case "Clouds":
             return "☁️"
         case "Rain":
-            return "🌧"
+            return "🌧️"
         case "Drizzle":
-            return "🌦"
+            return "🌦️"
         case "Thunderstorm":
-            return "⛈"
+            return "⛈️"
         case "Snow":
             return "❄️"
         case "Mist", "Fog":
-            return "🌫"
+            return "🌫️"
         default:
-            return "🌡"
+            return "🌡️"
         }
     }
-
-    }
-
+}

@@ -12,7 +12,11 @@ enum NetworkError: Error, LocalizedError {
         case.invalidURL:return "Geçersiz URL"
             case .invalidResponse:return "Geçersiz sunucu yanıtı"
         case .decodingError(let error):return "Decoding Error: \(error.localizedDescription)"
-        case .apiError(let message):return "API Error: \(message)"
+        case .apiError(let message):
+            if message.localizedCaseInsensitiveContains( "city not found"){
+                return "Şehir bulunamadı!"
+            }
+            return " Hata: \(message)"
         case .unknownError:return "Unknown Error"
         }
     }
@@ -44,8 +48,6 @@ class NetworkManager {
             
         }catch let decodingError as DecodingError{
             throw NetworkError.decodingError(decodingError)
-        }catch let networkError{
-            throw networkError
         }catch {
             throw NetworkError.unknownError
         }
