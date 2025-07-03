@@ -42,14 +42,14 @@ struct HomeView: View {
 
                 Spacer()
 
-                // Yükleme göstergesi
+                
                 if weatherVM.isLoading {
                     ProgressView()
                         .progressViewStyle(.circular)
                         .tint(.white)
                         .scaleEffect(1.5)
                 } else if !weatherVM.temperature.isEmpty {
-                    // Hava durumu kartı (Sadece başarılı veri geldiğinde göster)
+                    // Hava durumu kartı 
                     VStack(spacing: 10) {
                         Text(weatherVM.emojiForWeather(main: weatherVM.mainWeather))
                             .font(.system(size: 60))
@@ -67,8 +67,7 @@ struct HomeView: View {
                     .cornerRadius(20)
                     .shadow(radius: 20)
                 } else {
-                    // Başlangıç veya hata sonrası mesajı
-                    Text("Hava durumu bilgisi yok. Bir şehir arayın!") // Daha genel bir mesaj
+                    Text("Hava durumu bilgisi yok. Bir şehir arayın!") 
                         .foregroundColor(.white.opacity(0.7))
                         .font(.title3)
                         .padding()
@@ -89,14 +88,13 @@ struct HomeView: View {
             }
             .padding()
         }
-        // ALERT MODIFIER'I BURAYA EKLEYİN
+        
         .alert(isPresented: $weatherVM.showAlert) {
             Alert(
                 title: Text("Hata"),
                 message: Text(weatherVM.alertMessage),
                 dismissButton: .default(Text("Tamam")) {
-                    // Alert kapatıldığında yapılacak ekstra bir işlem varsa buraya yazılır.
-                    // Örneğin, şehir adını temizlemek gibi.
+                    
                 }
             )
         }
