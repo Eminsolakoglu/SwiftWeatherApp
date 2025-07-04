@@ -2,13 +2,15 @@
 import Foundation
 import Combine // Eğer kullanmaya devam ediyorsanız
 
-@MainActor
+//@MainActor
 class WeatherViewModel: ObservableObject {
     @Published var city: String = ""
     @Published var temperature: String = ""
     @Published var description: String = ""
     @Published var mainWeather: String = ""
     @Published var isLoading: Bool = false
+    @Published private var weatherData: WeatherResponse?
+
 
     // Alert durumunu yönetecek yeni değişkenler
     @Published var showAlert: Bool = false
@@ -36,6 +38,7 @@ class WeatherViewModel: ObservableObject {
 
         do {
             let response = try await weatherAPI.fetchCurrentWeather(for: city)
+            self.weatherData = response
 
             self.temperature = "\(Int(response.main.temp))°C"
             self.description = response.weather.first?.description.capitalized ?? "-"
@@ -75,4 +78,20 @@ class WeatherViewModel: ObservableObject {
             return "🌡️"
         }
     }
+    var tempMax: String {
+        if let max = weatherData?.main.tempMax {
+            return String(format: "%.0f°C", max)
+        } else {
+            return "-"
+        }
+    }
+
+    var tempMin: String {
+        if let min = weatherData?.main.tempMin {
+            return String(format: "%.0f°C", min)
+        } else {
+            return "-"
+        }
+    }
+
 }
